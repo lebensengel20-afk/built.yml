@@ -1,63 +1,231 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Offline Client Registry</title>
+    <title>Offline-Kundenregistrierung Pro</title>
     <style>
-        body { font-family: -apple-system, sans-serif; padding: 20px; background-color: #f5f5f7; }
-        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        input { display: block; margin-bottom: 12px; width: 95%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
-        button { background: #007aff; color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        body { font-family: -apple-system, sans-serif; padding: 20px; background-color: #f5f5f7; color: #333; margin: 0; }
+        
+        /* Login-Bildschirm */
+        #loginGate {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background-color: #f5f5f7; display: flex; justify-content: center; align-items: center; z-index: 9999;
+        }
+        .login-card { 
+            background: white; padding: 30px; border-radius: 12px; width: 340px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); text-align: center;
+        }
+        .login-card h3 { margin-top: 0; color: #1d1d1f; font-size: 22px; font-weight: 700; margin-bottom: 20px; }
+        .error-msg { color: #ff3b30; font-size: 13px; margin-bottom: 12px; display: none; font-weight: bold; }
+
+        /* Haupt-Arbeitsbereich */
+        .container { max-width: 650px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); display: none; }
+        
+        /* Logo-Layout */
+        .logo-container { text-align: center; margin-bottom: 22px; }
+        .app-logo { max-width: 200px; max-height: 200px; border-radius: 10px; object-fit: contain; }
+        .login-logo { max-width: 170px; max-height: 170px; border-radius: 8px; object-fit: contain; margin-bottom: 15px; }
+        
+        /* Typografie */
+        h2 { text-align: center; margin-top: 0; color: #1d1d1f; font-size: 28px; font-weight: 800; letter-spacing: -0.5px; }
+        
+        input, textarea { display: block; margin-bottom: 12px; width: 96%; padding: 10px; border: 1px solid #d2d2d7; border-radius: 6px; font-size: 14px; font-family: inherit; }
+        input:focus, textarea:focus { outline: none; border-color: #007aff; box-shadow: 0 0 0 3px rgba(0,122,255,0.1); }
+        textarea { resize: vertical; height: 70px; }
+        
+        .btn-group { display: flex; gap: 10px; margin-bottom: 20px; }
+        button { background: #007aff; color: white; border: none; padding: 12px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; transition: background 0.2s; }
         button:hover { background: #0056b3; }
-        ul { list-style-type: none; padding: 0; margin-top: 20px; }
-        li { padding: 10px; border-bottom: 1px solid #ddd; }
+        button.secondary { background: #34c759; }
+        button.secondary:hover { background: #28a745; }
+        
+        .search-box { background: #e5e5ea; border: none; margin-top: 25px; }
+        
+        /* Kundenliste */
+        ul { list-style-type: none; padding: 0; margin-top: 15px; max-height: 300px; overflow-y: auto; }
+        li { padding: 12px; border-bottom: 1px solid #e5e5ea; background: #fafafa; margin-bottom: 8px; border-radius: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .client-info { display: flex; flex-direction: column; gap: 2px; width: 70%; }
+        .client-name { font-weight: bold; font-size: 15px; }
+        .client-meta { font-size: 13px; color: #666; }
+        .client-date { font-size: 11px; color: #8e8e93; font-style: italic; margin-top: 2px; }
+        .client-note { font-size: 13px; color: #1d1d1f; background: #e5e5ea; padding: 6px; border-radius: 4px; margin-top: 4px; word-break: break-all; }
+        
+        .action-tray { display: flex; gap: 6px; }
+        .btn-action { width: auto; padding: 6px 12px; font-size: 12px; font-weight: normal; border-radius: 4px; }
+        .btn-edit { background: #ff9500; }
+        .btn-edit:hover { background: #e08500; }
+        .btn-delete { background: #ff3b30; }
+        .btn-delete:hover { background: #d32f2f; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Register Client (Offline)</h2>
-        <input type="text" id="name" placeholder="Full Name">
-        <input type="text" id="phone" placeholder="Phone Number">
-        <input type="email" id="email" placeholder="Email Address">
-        <button onclick="saveClient()">Save Client Profile</button>
 
-        <h3>Registered Profiles</h3>
+    <!-- ABSCHNITT 1: LOGIN-PORTAL -->
+    <div id="loginGate">
+        <div class="login-card">
+            <div class="logo-container">
+                <img src="logo.png" alt="App Logo" class="login-logo" onerror="this.style.display='none';">
+            </div>
+            <h3>System-Login</h3>
+            <div id="errorMsg" class="error-msg">Benutzername oder Passwort ungültig!</div>
+            <input type="text" id="loginUser" placeholder="Benutzername" style="width: 93%;">
+            <input type="password" id="loginPass" placeholder="Passwort" style="width: 93%;" onkeypress="handleLoginKey(event)">
+            <button onclick="validateLogin()" style="margin-top: 8px;">Einloggen</button>
+        </div>
+    </div>
+
+    <!-- ABSCHNITT 2: ANWENDUNGS-ARBEITSBEREICH -->
+    <div class="container" id="appWorkspace">
+        <div class="logo-container">
+            <img src="logo.png" alt="App Logo" class="app-logo" onerror="this.style.display='none';">
+        </div>
+
+        <h2 id="formTitle">Kunde registrieren</h2>
+        <input type="hidden" id="clientId">
+        <input type="text" id="name" placeholder="Vollständiger Name">
+        <input type="text" id="phone" placeholder="Telefonnummer">
+        <input type="email" id="email" placeholder="E-Mail-Adresse">
+        <textarea id="notes" placeholder="Notizen zum Kunden..."></textarea>
+        <div class="btn-group">
+            <button id="btnSave" onclick="saveClient()">Profil speichern</button>
+            <button class="secondary" onclick="exportToCSV()">Excel exportieren (CSV)</button>
+        </div>
+
+        <input type="text" id="searchBar" class="search-box" placeholder="🔍 Live-Suche nach Name, Telefon oder Notizen..." onkeyup="filterClients()">
+
+        <h3>Registrierte Profile</h3>
         <ul id="clientList"></ul>
     </div>
 
     <script>
         const { ipcRenderer } = require('electron');
+        let allClientsArray = []; 
+
+        // Login-Validierung
+        function validateLogin() {
+            const user = document.getElementById('loginUser').value.trim();
+            const pass = document.getElementById('loginPass').value;
+            const errorElement = document.getElementById('errorMsg');
+
+            if (user === 'admin' && pass === 'admin') {
+                document.getElementById('loginGate').style.display = 'none';
+                document.getElementById('appWorkspace').style.display = 'block';
+                ipcRenderer.send('get-clients');
+            } else {
+                errorElement.style.display = 'block';
+                document.getElementById('loginPass').value = '';
+            }
+        }
+
+        function handleLoginKey(e) {
+            if (e.key === 'Enter') validateLogin();
+        }
 
         function saveClient() {
+            const id = document.getElementById('clientId').value;
+            
+            // Format timestamp into local German formatting layout (de-DE)
+            const currentTimestamp = new Date().toLocaleString('de-DE');
+
             const clientData = {
-                name: document.getElementById('name').value,
-                phone: document.getElementById('phone').value,
-                email: document.getElementById('email').value
+                name: document.getElementById('name').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                email: document.getElementById('email').value.trim(),
+                notes: document.getElementById('notes').value.trim(),
+                reg_date: currentTimestamp
             };
             
-            if(!clientData.name) return alert('Name is required');
+            if (!clientData.name) return alert('Das Namensfeld ist erforderlich');
 
-            // Send data to main.js to save to SQLite
-            ipcRenderer.send('add-client', clientData);
+            if (id) {
+                clientData.id = id;
+                ipcRenderer.send('update-client', clientData);
+            } else {
+                ipcRenderer.send('add-client', clientData);
+            }
+            resetForm();
+        }
 
-            // Clear inputs
+        window.startEdit = function(id, name, phone, email, notes) {
+            document.getElementById('clientId').value = id;
+            document.getElementById('name').value = name;
+            document.getElementById('phone').value = phone;
+            document.getElementById('email').value = email;
+            document.getElementById('notes').value = notes;
+            
+            document.getElementById('formTitle').innerText = "Kundenprofil bearbeiten";
+            document.getElementById('btnSave').innerText = "Profil aktualisieren";
+            document.getElementById('name').focus();
+        };
+
+        window.triggerDelete = function(id) {
+            if (confirm("Sind Sie sicher, dass Sie diesen Datensatz dauerhaft löschen möchten?")) {
+                ipcRenderer.send('delete-client', id);
+            }
+        };
+
+        function resetForm() {
+            document.getElementById('clientId').value = '';
             document.getElementById('name').value = '';
             document.getElementById('phone').value = '';
             document.getElementById('email').value = '';
+            document.getElementById('notes').value = '';
+            document.getElementById('formTitle').innerText = "Kunde registrieren";
+            document.getElementById('btnSave').innerText = "Profil speichern";
         }
 
-        // Listen for updated lists from main.js
         ipcRenderer.on('render-clients', (event, clients) => {
-            const list = document.getElementById('clientList');
-            list.innerHTML = '';
-            clients.forEach(c => {
-                const li = document.createElement('li');
-                li.innerHTML = `<strong>${c.name}</strong> - ${c.phone} | <span style="color: #007aff">${c.email}</span>`;
-                list.appendChild(li);
-            });
+            allClientsArray = clients; 
+            renderList(clients);
         });
 
-        // Request data on app load
-        ipcRenderer.send('get-clients');
+        function renderList(listData) {
+            const list = document.getElementById('clientList');
+            list.innerHTML = '';
+            listData.forEach(c => {
+                const li = document.createElement('li');
+                const displayNote = c.notes ? `<div class="client-note"><strong>Notiz:</strong> ${c.notes}</div>` : '';
+                const displayDate = c.reg_date ? `<span class="client-date">Registriert am: ${c.reg_date}</span>` : '';
+
+                li.innerHTML = `
+                    <div class="client-info">
+                        <span class="client-name">${c.name}</span>
+                        <span class="client-meta">${c.phone} | ${c.email}</span>
+                        ${displayNote}
+                        ${displayDate}
+                    </div>
+                    <div class="action-tray">
+                        <button class="btn-action btn-edit" onclick="startEdit(${c.id}, '${c.name.replace(/'/g, "\\'")}', '${c.phone}', '${c.email}', '${(c.notes || '').replace(/'/g, "\\'")}')">Bearbeiten</button>
+                        <button class="btn-action btn-delete" onclick="triggerDelete(${c.id})">Löschen</button>
+                    </div>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        function filterClients() {
+            const query = document.getElementById('searchBar').value.toLowerCase();
+            const filtered = allClientsArray.filter(c => 
+                c.name.toLowerCase().includes(query) || 
+                c.phone.toLowerCase().includes(query) ||
+                (c.notes && c.notes.toLowerCase().includes(query))
+            );
+            renderList(filtered);
+        }
+
+        function exportToCSV() {
+            if (allClientsArray.length === 0) return alert("Keine Kundendaten zum Exportieren vorhanden.");
+            let csvContent = "data:text/csv;charset=utf-8,ID,Name,Telefon,E-Mail,Notizen,Registrierungsdatum\n";
+            allClientsArray.forEach(c => {
+                csvContent += `${c.id},"${c.name}","${c.phone}","${c.email}","${c.notes || ''}","${c.reg_date || ''}"\n`;
+            });
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "Offline_Kunden_Export.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
     </script>
 </body>
 </html>
