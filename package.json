@@ -27,7 +27,6 @@
       "category": "public.app-category.business",
       "icon": "icon.icns"
     },
-    "asar": false
+    "asar": true
   }
-
 }
