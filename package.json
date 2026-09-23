@@ -1,30 +1,33 @@
 {
   "name": "client-registry",
   "version": "1.0.0",
-  "description": "Offline Client Registration App",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "build:win": "electron-builder --win nsis --x64"
+    "build:win": "electron-builder --win nsis --x64",
+    "pack:mac": "electron-builder --mac dmg"
   },
   "dependencies": {
-    "electron": "27.3.11",
     "sqlite3": "^5.1.7"
   },
   "devDependencies": {
-    "electron-builder": "^24.13.3"
+    "electron": "27.3.11",
+    "electron-builder": "^24.13.3",
+    "@electron/rebuild": "^3.6.0"
   },
   "build": {
     "appId": "com.offline.clientregistry",
+    "npmRebuild": true,
     "win": {
-      "target": [
-        "nsis"
-      ]
+      "target": ["nsis"],
+      "icon": "icon.ico"
     },
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
+    "mac": {
+      "target": ["dmg"],
+      "category": "public.app-category.business",
+      "icon": "icon.icns"
     },
-    "asar": true
+    "asar": false
   }
+
 }
