@@ -2,21 +2,21 @@ name: Build Windows App
 on:
   push:
     tags:
-      - 'v*' # Triggers whenever you push a tag like v1.0.0
+      - 'v*'
 
 jobs:
   release:
-    runs-on: windows-latest # Bootstraps an actual Windows runtime machine!
+    runs-on: windows-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Install Node.js
+      - name: Install Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24 # Upgraded to match current GitHub runner environments
 
-      - name: Install Dependencies & Rebuild SQLite
+      - name: Install Dependencies
         run: |
           npm install
           
