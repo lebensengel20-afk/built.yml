@@ -10,11 +10,15 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true' # Bypasses the Node deprecation gate block
 
       - name: Install Node.js 24
         uses: actions/setup-node@v4
         with:
-          node-version: 24 # Upgraded to match current GitHub runner environments
+          node-version: 24
+        env:
+          ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION: 'true'
 
       - name: Install Dependencies
         run: |
