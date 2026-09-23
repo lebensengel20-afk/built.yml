@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Offline Client Registry</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; padding: 20px; background-color: #f5f5f7; }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        input { display: block; margin-bottom: 12px; width: 95%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+        button { background: #007aff; color: white; border: none; padding: 12px; width: 100%; border-radius: 4px; font-weight: bold; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        ul { list-style-type: none; padding: 0; margin-top: 20px; }
+        li { padding: 10px; border-bottom: 1px solid #ddd; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Register Client (Offline)</h2>
+        <input type="text" id="name" placeholder="Full Name">
+        <input type="text" id="phone" placeholder="Phone Number">
+        <input type="email" id="email" placeholder="Email Address">
+        <button onclick="saveClient()">Save Client Profile</button>
+
+        <h3>Registered Profiles</h3>
+        <ul id="clientList"></ul>
+    </div>
+
+    <script>
+        const { ipcRenderer } = require('electron');
+
+        function saveClient() {
+            const clientData = {
+                name: document.getElementById('name').value,
+                phone: document.getElementById('phone').value,
+                email: document.getElementById('email').value
+            };
+            
+            if(!clientData.name) return alert('Name is required');
+
+            // Send data to main.js to save to SQLite
+            ipcRenderer.send('add-client', clientData);
+
+            // Clear inputs
+            document.getElementById('name').value = '';
+            document.getElementById('phone').value = '';
+            document.getElementById('email').value = '';
+        }
+
+        // Listen for updated lists from main.js
+        ipcRenderer.on('render-clients', (event, clients) => {
+            const list = document.getElementById('clientList');
+            list.innerHTML = '';
+            clients.forEach(c => {
+                const li = document.createElement('li');
+                li.innerHTML = `<strong>${c.name}</strong> - ${c.phone} | <span style="color: #007aff">${c.email}</span>`;
+                list.appendChild(li);
+            });
+        });
+
+        // Request data on app load
+        ipcRenderer.send('get-clients');
+    </script>
+</body>
+</html>

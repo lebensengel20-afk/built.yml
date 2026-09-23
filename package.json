@@ -1,0 +1,30 @@
+{
+  "name": "client-registry",
+  "version": "1.0.0",
+  "description": "Offline Client Registration App",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "build:win": "electron-builder --win nsis --x64"
+  },
+  "dependencies": {
+    "electron": "27.3.11",
+    "sqlite3": "^5.1.7"
+  },
+  "devDependencies": {
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "com.offline.clientregistry",
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "asar": true
+  }
+}
